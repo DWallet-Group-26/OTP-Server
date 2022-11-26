@@ -1,30 +1,16 @@
-const unirest = require('unirest');
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
+
 
 function otpHandler(phone, message) {
-    console.log('Sending OTP', phone, message)
-
-    var req = unirest("POST", "https://www.fast2sms.com/dev/bulkV2");
-
-    req.headers({
-        "authorization": process.env.SMS_API_KEY
-    });
-
-    req.form({
-        "message": message,
-        "language": "english",
-        "route": "q",
-        "numbers": phone,
-    });
-
-    return new Promise((resolve, reject) => {
-        req.end(function (res) {
-            if (res.error) {
-                reject(res.error);
-            } else {
-                resolve(res.body);
-            }
-        });
-    });
+    return client.messages
+        .create({
+            body: message,
+            from: '+15136545536',
+            to: phone
+        })
+        .then(message => console.log(message.sid));
 }
 
 
