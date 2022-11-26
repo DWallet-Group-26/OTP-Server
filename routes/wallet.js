@@ -4,6 +4,11 @@ const db = require('../models');
 const otpHandler = require('../handlers/otpHandler')
 
 
+
+//  --------- Send Server Address ---------
+router.get('/serveraddress', (req, res, next) => {
+    res.send(process.env.SERVER_ADDRESS);
+})
 // --------- Create Wallet and Verify Phone Number ---------
 
 // Create Wallet
@@ -82,10 +87,10 @@ router.post('/verify-otp', async (req, res, next) => {
                 await transaction.save()
 
                 // Eth.js
-                var publicKey = transaction.publicKey 
+                var publicKey = transaction.publicKey
                 var transactionID = transaction.transactionID
 
-                
+
                 res.status(200).send('Verification Successful')
             } else {
                 res.status(400).send('OTP is Incorrect')
