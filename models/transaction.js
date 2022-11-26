@@ -1,26 +1,28 @@
 const mongoose = require('mongoose');
 
 
-var walletSchema = new mongoose.Schema({
+var transactionSchema = new mongoose.Schema({
     publicKey: {
         type: String,
         required: true,
-        unique: true
     },
     created: {
         type: Date,
         default: Date.now
     },
-
-    phone: {
+    otp: {
         type: String,
         required: true,
-        unique: true
     },
-    isverified: {
+    transactionID: {
+        type: String,
+        default: null,
+        required: true
+    },
+    isCompleted: {
         type: Boolean,
         default: false
     }
 });
 
-module.exports = mongoose.model('Wallet', walletSchema);
+module.exports = mongoose.model('transaction', transactionSchema);

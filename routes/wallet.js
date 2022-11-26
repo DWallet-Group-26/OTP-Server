@@ -37,6 +37,7 @@ router.post('/verifyphone', async (req, res, next) => {
         .then(async (wallet) => {
             if (wallet.otp == req.body.otp) {
                 wallet.otp = null
+                wallet.isverified = true
                 await wallet.save()
                 res.status(200).send('Phone Number Verified');
             } else {
@@ -54,30 +55,37 @@ router.post('/verifyphone', async (req, res, next) => {
 
 // --------- OTP Verification for Transaction ---------
 
-// Send OTP
+// Send OTP ({publicKey, transactionID})
 router.post('/send-otp', (req, res, next) => {
     db.Wallet.find({ publicKey: req.body.publicKey })
         .then(async (wallet) => {
             otp = Math.floor(100000 + Math.random() * 900000)
             wallet.otp = otp
             message = `Your OTP is ${otp}`
+            transaction = await db.Transaction.create({ publicKey: req.body.publicKey, transactionID: req.body.transactionID, opt })
             await wallet.save()
             otpHandler(req, wallet.phone, message)
-            return res.status(200).send('OTP Sent')
+            return res.status(200).send(transaction);
         })
         .catch((err) => {
             next(err)
         })
 })
 
-// Verify OTP
+// Verify OTP ({transactionID, otp})
 router.post('/verify-otp', async (req, res, next) => {
-    db.Wallet.find({ publicKey: req.body.publicKey })
-        .then(async (wallet) => {
-            if (wallet.otp == req.body.otp) {
-                wallet.otp = null
-                await wallet.save()
+    db.Transaction.findOne({ transactionID: req.body.transactionID })
+        .then(async (transaction) => {
+            if (transaction.otp == req.body.otp) {
+                transaction.otp = null
+                transaction.isCompleted = true
+                await transaction.save()
 
+                // Eth.js
+                var publicKey = transaction.publicKey 
+                var transactionID = transaction.transactionID
+
+                
                 res.status(200).send('Verification Successful')
             } else {
                 res.status(400).send('OTP is Incorrect')
