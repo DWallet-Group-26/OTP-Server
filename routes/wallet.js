@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models');
 const otpHandler = require('../handlers/otpHandler')
+const ethers = require('ethers');
 
 
 
@@ -11,7 +12,7 @@ router.get('/serveraddress', (req, res, next) => {
 })
 // --------- Create Wallet and Verify Phone Number ---------
 
-// Create Wallet
+// Create Wallet ({phoneNumber, publicKey})
 router.post('/createwallet', async (req, res, next) => {
     console.log(req.body);
     db.Wallet.create(req.body)
@@ -36,7 +37,7 @@ router.post('/createwallet', async (req, res, next) => {
         });
 })
 
-// Verify Phone Number
+// Verify Phone Number ({publicKey, otp})
 router.post('/verifyphone', async (req, res, next) => {
     db.Wallet.findOne({ phone: req.body.phone })
         .then(async (wallet) => {
