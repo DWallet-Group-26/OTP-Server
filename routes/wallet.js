@@ -10,6 +10,8 @@ const ethers = require('ethers');
 router.get('/serveraddress', (req, res, next) => {
     res.send(process.env.SERVER_ADDRESS);
 })
+
+
 // --------- Create Wallet and Verify Phone Number ---------
 
 // Create Wallet ({phoneNumber, publicKey})
@@ -39,7 +41,7 @@ router.post('/createwallet', async (req, res, next) => {
 
 // Verify Phone Number ({publicKey, otp})
 router.post('/verifyphone', async (req, res, next) => {
-    db.Wallet.findOne({ phone: req.body.phone })
+    db.Wallet.findOne({ publicKey: req.body.publicKey })
         .then(async (wallet) => {
             if (wallet.otp == req.body.otp) {
                 wallet.otp = null
@@ -68,7 +70,7 @@ router.post('/send-otp', (req, res, next) => {
             otp = Math.floor(100000 + Math.random() * 900000)
             wallet.otp = otp
             message = `Your OTP is ${otp}`
-            transaction = await db.Transaction.create({ publicKey: req.body.publicKey, transactionID: req.body.transactionID, opt })
+            transaction = await db.Transaction.create({ publicKey: req.body.publicKey, transactionID: req.body.transactionID, otp })
             await wallet.save()
             otpHandler(req, wallet.phone, message)
             return res.status(200).send(transaction);

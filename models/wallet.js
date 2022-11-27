@@ -20,6 +20,10 @@ var walletSchema = new mongoose.Schema({
     isverified: {
         type: Boolean,
         default: false
+    },
+    otp: {
+        type: String,
+        default: null
     }
 });
 

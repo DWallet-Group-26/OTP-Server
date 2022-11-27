@@ -7,7 +7,7 @@ function otpHandler(phone, message) {
     return client.messages
         .create({
             body: message,
-            from: '+15136545536',
+            from: process.env.TWILLIO_NUMBER,
             to: phone
         })
         .then(message => console.log(message.sid));
