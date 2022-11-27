@@ -4,12 +4,15 @@ const db = require('../models');
 const otpHandler = require('../handlers/otpHandler')
 const ethers = require('ethers');
 
-
+const FACTORY_ABI = require('../ABI/MultiSigWalletFactory.json').abi;
+const WALLET_ABI = require('../ABI/MultiSigWallet.json').abi;
+const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
+const server_wallet = new ethers.Wallet(process.env.SYSTEM_KEY, provider)
 
 //  --------- Send Server Address ---------
 router.get('/serveraddress', (req, res, next) => {
-    res.send(process.env.SERVER_ADDRESS);
-})
+    res.send(process.env.SYSTEM_ADDRESS);
+})  
 
 
 // --------- Create Wallet and Verify Phone Number ---------
@@ -92,7 +95,12 @@ router.post('/verify-otp', async (req, res, next) => {
                 // Eth.js
                 var publicKey = transaction.publicKey
                 var transactionID = transaction.transactionID
-
+                const factory = new ethers.Contract(process.env.MULTISIG_FACTORY_ADDRESS, FACTORY_ABI, wallet);
+                
+                const multisig_wallet_addr = await factory.mainMapping(publicKey);
+                const multisig_wallet = new ethers.Contract(multisig_wallet_addr, WALLET_ABI, wallet);
+    
+                await multisig_wallet.confirmTransaction(transactionID)
 
                 res.status(200).send('Verification Successful')
             } else {
