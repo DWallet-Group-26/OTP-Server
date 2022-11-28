@@ -17,7 +17,7 @@ router.get('/serveraddress', (req, res, next) => {
 
 // --------- Create Wallet and Verify Phone Number ---------
 
-// Create Wallet ({phoneNumber, publicKey})
+// Create Wallet ({phone, publicKey})
 router.post('/createwallet', async (req, res, next) => {
     console.log(req.body);
     db.Wallet.create(req.body)
