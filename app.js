@@ -6,16 +6,17 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-
-
-app.listen(process.env.PORT || 3000, process.env.IP, () => {
-    console.log('Server Listening on Port 3000')
-})
-
-
 // Error handler
 const errorHandler = require('./handlers/errorHandler');
 require('dotenv').config();
+
+const PORT = (process.env.PORT || 3000);
+
+app.listen(PORT, process.env.IP, () => {
+    console.log('Server Listening on Port ' + (PORT));
+})
+
+
 
 
 // Body Parser

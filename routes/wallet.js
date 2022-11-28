@@ -11,7 +11,7 @@ const server_wallet = new ethers.Wallet(process.env.SYSTEM_KEY, provider)
 
 //  --------- Send Server Address ---------
 router.get('/serveraddress', (req, res, next) => {
-    res.send(process.env.SYSTEM_ADDRESS);
+    res.send({"address": process.env.SYSTEM_ADDRESS});
 })  
 
 
@@ -95,10 +95,10 @@ router.post('/verify-otp', async (req, res, next) => {
                 // Eth.js
                 var publicKey = transaction.publicKey
                 var transactionID = transaction.transactionID
-                const factory = new ethers.Contract(process.env.MULTISIG_FACTORY_ADDRESS, FACTORY_ABI, wallet);
+                const factory = new ethers.Contract(process.env.MULTISIG_FACTORY_ADDRESS, FACTORY_ABI, server_wallet);
                 
                 const multisig_wallet_addr = await factory.mainMapping(publicKey);
-                const multisig_wallet = new ethers.Contract(multisig_wallet_addr, WALLET_ABI, wallet);
+                const multisig_wallet = new ethers.Contract(multisig_wallet_addr, WALLET_ABI, server_wallet);
     
                 await multisig_wallet.confirmTransaction(transactionID)
 
