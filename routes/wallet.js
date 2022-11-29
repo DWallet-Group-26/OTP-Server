@@ -68,27 +68,34 @@ router.post('/verifyphone', async (req, res, next) => {
 
 // Send OTP ({publicKey, transactionID})
 router.post('/send-otp', (req, res, next) => {
-    db.Wallet.find({ publicKey: req.body.publicKey })
+    console.log("Send OTP");
+    console.log(req.body);
+    db.Wallet.findOne({ publicKey: req.body.publicKey })
         .then(async (wallet) => {
             otp = Math.floor(100000 + Math.random() * 900000)
-            wallet.otp = otp
             message = `Your OTP is ${otp}`
             transaction = await db.Transaction.create({ publicKey: req.body.publicKey, transactionID: req.body.transactionID, otp })
-            await wallet.save()
-            otpHandler(req, wallet.phone, message)
-            return res.status(200).send(transaction);
+            
+            otpHandler(wallet.phone, message)
+                .then((response) => {
+                    console.log(response);
+                    return res.status(200).send(transaction);
+                })
+                .catch((err) => {
+                    console.log(err);
+                    res.status(500).send(err);
+                })
         })
         .catch((err) => {
             next(err)
         })
 })
 
-// Verify OTP ({transactionID, otp})
+// Verify OTP ({publicKey, transactionID, otp})
 router.post('/verify-otp', async (req, res, next) => {
-    db.Transaction.findOne({ transactionID: req.body.transactionID })
+    db.Transaction.findOne({ publicKey: req.body.publicKey,transactionID: req.body.transactionID })
         .then(async (transaction) => {
-            if (transaction.otp == req.body.otp) {
-                transaction.otp = null
+            if (transaction.otp == req.body.otp && transaction.isCompleted == false) {
                 transaction.isCompleted = true
                 await transaction.save()
 
