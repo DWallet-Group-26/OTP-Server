@@ -14,8 +14,7 @@ var walletSchema = new mongoose.Schema({
 
     phone: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     isverified: {
         type: Boolean,
