@@ -61,19 +61,23 @@ router.post('/verifyphone', async (req, res, next) => {
 })
 
 
-
+const load_from_backup_key_address = async (publicKey) => {
+    const factory = new ethers.Contract(process.env.MULTISIG_FACTORY_ADDRESS, FACTORY_ABI, server_wallet);
+    const main_wallet_addr = await factory.mainFromBackupMapping(publicKey);
+    return main_wallet_addr;
+}
 
 
 // --------- OTP Verification for Transaction ---------
 
 // Send OTP ({publicKey, transactionID})
-router.post('/send-otp', (req, res, next) => {
-    publicKey = null
+router.post('/send-otp', async (req, res, next) => {
+    let publicKey = null
     // if Bacup Key used
     if (req.body.typeKey == 'Backup') {
-        // publicKey = load_from_main_key_address
+        publicKey = await load_from_backup_key_address(req.body.publicKey)
     } else {
-        // publicKey = load_from_main_key_address
+        publicKey = req.body.publicKey
     }
     db.Wallet.findOne({ publicKey })
         .then(async (wallet) => {
@@ -98,14 +102,14 @@ router.post('/send-otp', (req, res, next) => {
 
 // Verify OTP ({publicKey, transactionID, otp})
 router.post('/verify-otp', async (req, res, next) => {
-
+    let publicKey = null
     // if Bacup Key used
     if (req.body.typeKey == 'Backup') {
-        // publicKey = load_from_main_key_address
+        publicKey = await load_from_backup_key_address(req.body.publicKey)
     } else {
-        // publicKey = load_from_main_key_address
+        publicKey = req.body.publicKey
     }
-    db.Transaction.findOne({ publicKey: req.body.publicKey, transactionID: req.body.transactionID })
+    db.Transaction.findOne({ publicKey, transactionID: req.body.transactionID })
         .then(async (transaction) => {
             if (transaction.otp == req.body.otp && transaction.isCompleted == false) {
                 transaction.isCompleted = true
