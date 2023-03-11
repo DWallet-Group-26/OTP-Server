@@ -11,8 +11,8 @@ const server_wallet = new ethers.Wallet(process.env.SYSTEM_KEY, provider)
 
 //  --------- Send Server Address ---------
 router.get('/serveraddress', (req, res, next) => {
-    res.send({"address": process.env.SYSTEM_ADDRESS});
-})  
+    res.send({ "address": process.env.SYSTEM_ADDRESS });
+})
 
 
 // --------- Create Wallet and Verify Phone Number ---------
@@ -68,14 +68,19 @@ router.post('/verifyphone', async (req, res, next) => {
 
 // Send OTP ({publicKey, transactionID})
 router.post('/send-otp', (req, res, next) => {
-    console.log("Send OTP");
-    console.log(req.body);
-    db.Wallet.findOne({ publicKey: req.body.publicKey })
+    publicKey = null
+    // if Bacup Key used
+    if (req.body.typeKey == 'Backup') {
+        // publicKey = load_from_main_key_address
+    } else {
+        // publicKey = load_from_main_key_address
+    }
+    db.Wallet.findOne({ publicKey })
         .then(async (wallet) => {
             otp = Math.floor(100000 + Math.random() * 900000)
             message = `Your OTP is ${otp}`
-            transaction = await db.Transaction.create({ publicKey: req.body.publicKey, transactionID: req.body.transactionID, otp })
-            
+            transaction = await db.Transaction.create({ publicKey, transactionID: req.body.transactionID, otp })
+
             otpHandler(wallet.phone, message)
                 .then((response) => {
                     console.log(response);
@@ -93,7 +98,14 @@ router.post('/send-otp', (req, res, next) => {
 
 // Verify OTP ({publicKey, transactionID, otp})
 router.post('/verify-otp', async (req, res, next) => {
-    db.Transaction.findOne({ publicKey: req.body.publicKey,transactionID: req.body.transactionID })
+
+    // if Bacup Key used
+    if (req.body.typeKey == 'Backup') {
+        // publicKey = load_from_main_key_address
+    } else {
+        // publicKey = load_from_main_key_address
+    }
+    db.Transaction.findOne({ publicKey: req.body.publicKey, transactionID: req.body.transactionID })
         .then(async (transaction) => {
             if (transaction.otp == req.body.otp && transaction.isCompleted == false) {
                 transaction.isCompleted = true
@@ -103,10 +115,10 @@ router.post('/verify-otp', async (req, res, next) => {
                 var publicKey = transaction.publicKey
                 var transactionID = transaction.transactionID
                 const factory = new ethers.Contract(process.env.MULTISIG_FACTORY_ADDRESS, FACTORY_ABI, server_wallet);
-                
+
                 const multisig_wallet_addr = await factory.mainMapping(publicKey);
                 const multisig_wallet = new ethers.Contract(multisig_wallet_addr, WALLET_ABI, server_wallet);
-    
+
                 await multisig_wallet.confirmTransaction(transactionID)
 
                 res.status(200).send('Verification Successful')
