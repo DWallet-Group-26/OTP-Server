@@ -19,3 +19,4 @@ mongoose
 
 module.exports.Wallet = require('./wallet');
 module.exports.Transaction = require('./transaction');
+module.exports.BackupKey = require('./backupKey');
