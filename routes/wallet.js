@@ -64,7 +64,7 @@ router.post('/verifyphone', async (req, res, next) => {
 const load_from_backup_key_address = async (publicKey) => {
     const factory = new ethers.Contract(process.env.MULTISIG_FACTORY_ADDRESS, FACTORY_ABI, server_wallet);
     const main_wallet_addr = await factory.mainFromBackupMapping(publicKey);
-    return main_wallet_addr;
+    return main_wallet_addr.toLowerCase();
 }
 
 
@@ -73,12 +73,15 @@ const load_from_backup_key_address = async (publicKey) => {
 // Send OTP ({publicKey, transactionID})
 router.post('/send-otp', async (req, res, next) => {
     let publicKey = null
+    console.log(req.body)
     // if Bacup Key used
     if (req.body.typeKey == 'Backup') {
         publicKey = await load_from_backup_key_address(req.body.publicKey)
     } else {
         publicKey = req.body.publicKey
     }
+    console.log(publicKey)
+
     db.Wallet.findOne({ publicKey })
         .then(async (wallet) => {
             otp = Math.floor(100000 + Math.random() * 900000)
