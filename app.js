@@ -34,7 +34,7 @@ const backupStoreRoutes = require('./routes/backupStore');
 
 // Incuding Routes
 app.use('/api/dwallet', walletRoutes);
-app.use('/api/backupStrore', backupStoreRoutes);
+app.use('/api/backupStore', backupStoreRoutes);
 
 
 

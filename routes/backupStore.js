@@ -24,7 +24,7 @@ router.post('/backup_store', async (req, res, next) => {
     const { key, phone, password } = req.body;
 
     db.BackupKey.create({
-        encryptedKey: crypto.AES.encrypt(key,password).toString(),
+        encryptedKey: crypto.AES.encrypt(key, password).toString(),
         passwordHash: crypto.SHA256(password).toString(),
         phone: phone
     }).then((backupKey) => {
@@ -39,8 +39,8 @@ router.post('/backup_store', async (req, res, next) => {
 router.post('/load_key', async (req, res, next) => {
     const { phone, password } = req.body;
     db.BackupKey.findOne({ phone: phone }).then((backupKey) => {
-        if (crypto.SHA256(password).toString()==backupKey.passwordHash) {
-            res.status(200).send(crypto.AES.decrypt(backupKey.encryptedKey,password).toString(crypto.enc.Utf8));
+        if (crypto.SHA256(password).toString() == backupKey.passwordHash) {
+            res.status(200).send({ 'key': crypto.AES.decrypt(backupKey.encryptedKey, password).toString(crypto.enc.Utf8) });
         } else {
             res.status(400).send('Invalid Password');
         }
