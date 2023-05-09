@@ -22,25 +22,39 @@ const server_wallet = new ethers.Wallet(process.env.SYSTEM_KEY, provider)
 
 router.post('/backup_store', async (req, res, next) => {
     const { key, phone, password } = req.body;
+    db.Wallet.findOne({ phone: phone }).then(async (wallet) => {
+        if (wallet) {
+            let backup = await db.BackupKey.findOne({ phone: phone });
+            if (backup) {
+                await backup.remove();
+            }
+            db.BackupKey.create({
+                encryptedKey: crypto.AES.encrypt(key, password).toString(),
+                passwordHash: crypto.SHA256(password).toString(),
+                phone: phone
+            }).then((backupKey) => {
+                res.status(200).send('Key Stored');
+            }
+            ).catch((err) => {
+                next(err);
+            }
+            )
+        } else {
+            res.status(400).send('Invalid Phone Number');
+        }
 
-    db.BackupKey.create({
-        encryptedKey: crypto.AES.encrypt(key, password).toString(),
-        passwordHash: crypto.SHA256(password).toString(),
-        phone: phone
-    }).then((backupKey) => {
-        res.status(200).send('Key Stored');
-    }
-    ).catch((err) => {
-        next(err);
-    }
-    )
+    })
+        .catch((err) => {
+            next(err);
+        }
+        )
 })
 
 router.post('/load_key', async (req, res, next) => {
     const { phone, password } = req.body;
     db.BackupKey.findOne({ phone: phone }).then((backupKey) => {
         if (crypto.SHA256(password).toString() == backupKey.passwordHash) {
-            res.status(200).send({ 'key': crypto.AES.decrypt(backupKey.encryptedKey, password).toString(crypto.enc.Utf8) });
+            res.status(200).send({ 'key': backupKey.encryptedKey });
         } else {
             res.status(400).send('Invalid Password');
         }
@@ -50,7 +64,6 @@ router.post('/load_key', async (req, res, next) => {
     }
     )
 })
-
 module.exports = router;
 
 
